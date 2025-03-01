@@ -3,9 +3,19 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
-from gdrive_client_config import GDriveClientConfig
+from ..src.gdrive_client_config import GDriveClientConfig
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
+
+
+def _execute_download(downloader: MediaIoBaseDownload) -> None:
+    """Execute a download operation with progress track
+    :param downloader: MediaIoBaseDownload instance
+    """
+    done: bool = False
+    # Make a loop to get the (status and done)
+    while not done:
+        _, done = downloader.next_chunk()
 
 
 class GDriveClient:
@@ -26,7 +36,7 @@ class GDriveClient:
                 serviceName="drive", version="v3", credentials=self._credentials
             ),
             "sheets": build(
-                serviceName="sheet", version="v4", credentials=self._credentials
+                serviceName="sheets", version="v4", credentials=self._credentials
             ),
         }
 
@@ -54,8 +64,9 @@ class GDriveClient:
     ) -> None:
         """Download a file from Google Drive.
         :param directory_path: Directory to save the file to download
+        :param file_name:
         :param file_id: Google ID of the file to download
-        :param mime_type: Optional MIME type for export (for Google Workspace files).
+        :param mime_type: an Optional MIME type for export (for Google Workspace files).
                        See: https://developers.google.com/drive/api/guides/ref-export-formats
         :raise
             Exception if the download fails
@@ -76,19 +87,10 @@ class GDriveClient:
                 downloader: MediaIoBaseDownload = MediaIoBaseDownload(
                     fd=file_writer, request=request
                 )
-                self._execute_download(downloader)
+                _execute_download(downloader)
 
         except Exception as e:
             raise Exception(f"Failed to download {file_id}: {str(e)}")
-
-    def _execute_download(self, downloader: MediaIoBaseDownload) -> None:
-        """Execute a download operation with progress track
-        :param downloader: MediaIoBaseDownload instance
-        """
-        done: bool = False
-        # Make a loop to get the (status and done)
-        while not done:
-            _, done = downloader.next_chunk()
 
     def retrieve_file_content(self, file_id: str) -> io.BytesIO:
         """Retrieve a file from Google Drive as BytesIO object
@@ -104,7 +106,7 @@ class GDriveClient:
                 fd=file_content, request=request
             )
 
-            self._execute_download(downloader)
+            _execute_download(downloader)
             file_content.seek(0)
             return file_content
 
@@ -112,9 +114,9 @@ class GDriveClient:
             raise Exception(f"Failed to retrieve file content for {file_id}: {str(e)}")
 
     def retrieve_sheet_data(self, file_id: str, sheet_range: str) -> List[List[Any]]:
-        """Read data from a google sheet
-        :param file_id: ID for the google sheet
-        :param sheet range: Range of cells to read (e.j., A1:Z90)
+        """Read data from a Google sheet
+        :param file_id: ID for the Google sheet
+        :param sheet_range: Range of cells to read (e.j., A1: Z90)
         :return: List of rows containing cell values
         """
         try:

@@ -6,10 +6,17 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 
+def _refresh_credentials(creds: Credentials) -> None:
+    """Refresh expired credentials
+    :param creds:  with a valid refresh token
+    """
+    creds.refresh(Request())
+
+
 class GDriveClientConfig:
     """
-    Handles credentials managment including retrieving, refreshing, and
-    storing oauth2 credentials for Google Drive API acces.
+    Handles credential management including retrieving, refreshing, and
+    storing oauth2 credentials for Google Drive API access.
     """
 
     def __init__(
@@ -43,10 +50,10 @@ class GDriveClientConfig:
         )
 
     def get_credentials(self) -> Optional[Credentials]:
-        """Get valid Oauth2 credentials for Google API access.
+        """Get valid Oauth2 credentials for Google AI access.
 
-        Attemtps to load existing credentials, refresh them if expired,
-        or obtain new ones through the Oauth flow if neccesary.
+        Attempts to load existing credentials, refresh them if expired,
+        or get new ones through the Oauth flow if necessary.
 
         :return: Valid Google Oauth2 credentials
         """
@@ -58,36 +65,30 @@ class GDriveClientConfig:
 
         # If creds exist but are expired, refresh token
         if creds and creds.expired and creds.refresh_token:
-            self._refresh_credentials(creds)
+            _refresh_credentials(creds)
             self._save_credentials(creds)
             return creds
 
     def _load_existing_credentials(self) -> Optional[Credentials]:
         """Load credentials from the file toke if it exists.
-        return: Credentials object if toke file exists, None otherwise
+        return: Credentials object if a token file exists, None otherwise
         """
         if self._token_file_path.exists():
             return Credentials.from_authorized_user_file(
-                filename=self._token_file_path, scopes=self._scope
+                filename=self._token_file_path.as_posix(), scopes=self._scope
             )
         return None
-
-    def _refresh_credentials(self, creds: Credentials) -> None:
-        """Refresh expired credentials
-        :param creds: credentials with a valid refresh token
-        """
-        creds.refresh(Request())
 
     def _save_credentials(self, creds: Credentials) -> None:
         """Save credentials to the token file
         :param creds: Credentials to save
         """
-        with open(self._token_file_path) as token_file:
+        with open(self._token_file_path, "w") as token_file:
             token_file.write(creds.to_json())
 
     def _get_credentials_from_flow(self) -> None:
         """Obtain new credentials using Oauth flow
-        :return: New credentials obtained through user autorization.
+        :return: New credentials obtained through user authorization.
         """
         flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file(
             client_secrets_file=self._credential_file_path, scopes=self._scope
