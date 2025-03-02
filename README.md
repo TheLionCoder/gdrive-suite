@@ -51,8 +51,7 @@ mkdir -p conf/local
 ```python
 # project/src/mde.py
 from src.cloud_utils.src.gdrive_client import GdriveClient
-from mde_analysis_project.cloud_utils.src.gdrive_client_config import GDriveClientConfig
-from mde_analysis_project.cloud_utils.src.yaml_config_manager import YamlConfigManager
+from src.cloud_utils.src.gdrive_client_config import GDriveClientConfig
 
 if __name__ == "__main__":
     PROJ_ROOT = Path(__file__).resolve().parents[1]
