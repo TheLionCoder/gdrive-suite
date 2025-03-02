@@ -55,6 +55,8 @@ class YamlConfigManager:
         :return: The requested configuration value.
         :raise:
             ValueError: If the key path doesnot exist and no default is provided.
+        :example:
+        >>> config.get_property("google", "scope")
         """
         if not keys:
             return self._config
@@ -71,16 +73,6 @@ class YamlConfigManager:
                     f"Property not found at path: {'.'.join(str(key) for key in keys)}"
                 )
         return value
-
-    def get(self, property_path: str, default: Optional[Any] = None) -> Any:
-        """Get a property using dot notation path.
-        :param property_path: Dot-separated path to the property(e.j., "database.host")
-        :param default: Value to return if the property is not found.
-            if not provided, a ValueError will be raised.
-        :return: The requested configuration value.
-        """
-        keys: List[str] = property_path.split(".")
-        return self.get_property(*keys, default=default)
 
     def reload(self) -> None:
         """Reload the configuration file.
