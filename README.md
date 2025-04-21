@@ -8,7 +8,7 @@ A Python tool designed to work with cloud-based storage services
 
 ---
 
-## :box: Installation
+## :package: Installation
 
 ```bash
 cd my-python-project
