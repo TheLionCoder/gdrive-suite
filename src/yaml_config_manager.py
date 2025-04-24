@@ -54,6 +54,8 @@ class YamlConfigManager:
         :return: The requested configuration value.
         :raise:
             ValueError: If the key path does not exist, and no default is provided.
+        :example:
+        >>> config.get_property("google", "scope")
         """
         if not keys:
             return self._config
