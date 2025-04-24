@@ -63,11 +63,12 @@ class GDriveClientConfig:
         if creds and creds.valid:
             return creds
 
-        # If creds exist but are expired, refresh token
+        # If creds exist but are expired, refresh the token
         if creds and creds.expired and creds.refresh_token:
             _refresh_credentials(creds)
             self._save_credentials(creds)
             return creds
+        return None
 
     def _load_existing_credentials(self) -> Optional[Credentials]:
         """Load credentials from the file toke if it exists.

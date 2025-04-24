@@ -74,7 +74,7 @@ class GDriveClient:
         file_path: Path = directory_path.joinpath(file_name)
 
         try:
-            # Get the appropiate request based on mime_type
+            # Get the appropriate request based on mime_type
             if mime_type:
                 request = self.drive_service.files().export_media(
                     fileId=file_id, mimeType=mime_type
@@ -136,7 +136,7 @@ class GDriveClient:
     def upload_file(
         self, file_path: str, file_name: str, folder_id: str, mime_type: str, **metadata
     ) -> str:
-        """Upload file to Google Drive
+        """Upload the file to Google Drive
         :param file_path: Path to the file to the upload
         :param file_name: Name for the uploaded file
         :param folder_id: ID of the folder to upload to
