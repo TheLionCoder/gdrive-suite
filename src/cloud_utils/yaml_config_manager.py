@@ -22,9 +22,6 @@ class YamlConfigManager:
             TypeError: If a file path is not a Path object.
             ValueError: If the YAML file cannot be loaded.
         """
-        if not isinstance(file_path, Path):
-            raise TypeError("file_path must be a Path object")
-
         self._config_file: Path = file_path
         self._config: Dict[str, Any] = self._load_config()
 
@@ -72,4 +69,3 @@ class YamlConfigManager:
                     f"Property not found at path: {'.'.join(str(key) for key in keys)}"
                 )
         return value
-

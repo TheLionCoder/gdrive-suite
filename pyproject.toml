@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 authors = [{ name = "Orlando Reyes", email = "eorlando.reyesruiz@gmail.com" }]
-name = "gdrive_suite"
+name = "cloud-utils"
 version = "0.1.0"
 description = "A client for interacting with google drive and google sheets."
 readme = "README.md"
@@ -36,4 +36,3 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
