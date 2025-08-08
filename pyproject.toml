@@ -8,7 +8,7 @@ name = "gdrive_suite"
 version = "0.1.0"
 description = "A client for interacting with google drive and google sheets."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.8"
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
@@ -36,3 +36,4 @@ dev = [
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
