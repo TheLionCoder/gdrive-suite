@@ -4,15 +4,22 @@ build-backend = "setuptools.build_meta"
 
 [project]
 authors = [{ name = "Orlando Reyes", email = "eorlando.reyesruiz@gmail.com" }]
-name = "cloud-utils"
-version = "0.1.0"
-description = "A client for interacting with google drive and google sheets."
+name = "gdrive-suite"
+version = "0.1.1"
+description = "A Python library for interacting with Google Drive and Google Sheets."
 readme = "README.md"
-requires-python = ">=3.8"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
 classifiers = [
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Internet",
 ]
 dependencies = [
   "google-api-python-client>=2.162.0",
@@ -22,7 +29,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/TheLionCoder/cloud-utils"
+"Homepage" = "https://github.com/TheLionCoder/gdrive-suite"
+"Bug Tracker" = "https://github.com/TheLionCoder/gdrive-suite/issues"
 
 
 [project.optional-dependencies]
@@ -32,6 +40,8 @@ dev = [
   "google-api-python-client-stubs",
   "pytest",
   "pytest-mock",
+  "build",
+  "twine",
 ]
 
 [tool.setuptools.packages.find]
