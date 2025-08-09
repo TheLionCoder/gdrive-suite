@@ -1,5 +1,5 @@
 """ "
-cloud_utils
+gdrive_suite
 
 A python tool designed to work with cloud-based storage services
 """

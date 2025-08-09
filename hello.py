@@ -1,5 +1,5 @@
 def main():
-    print("Hello from cloud-utils!")
+    print("Hello from gdrive-suite!")
 
 
 if __name__ == "__main__":

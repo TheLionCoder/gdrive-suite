@@ -3,7 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![PyPi Version](https://img.shields.io/pypi/v/gdrive-suite.svg?style=for-the-badge&logo=pypi&color=blue)](https://pypi.org/project/gdrive-suite)
-[![MIT License](https://img.shields.io/github/license/TheLionCoder/gdrive-suite?style=for-the-badge&color=green)](https://github.com/TheLionCoder/cloud-utils/blob/main/LICENS)
+[![MIT License](https://img.shields.io/github/license/TheLionCoder/gdrive-suite?style=for-the-badge&color=green)](https://github.com/TheLionCoder/gdrive-suite/blob/master/LICENSE)
 
 GDrive Suite is a robust Python library designed to streamline interaction with
 Google Drive and Google Sheets.
@@ -83,6 +83,7 @@ for your application.
 Your project structure should look like this:o use Gdrive Suite you need to enable
 
 ````sh
+
 - Place credentials in `conf/local`
 
 ```bash
@@ -91,6 +92,7 @@ Your project structure should look like this:o use Gdrive Suite you need to enab
 │       ├── credentials.json
 ├── src
 │   ├── script.py
+
 ````
 
 The first time you run your application, you will be prompted to authorize it via
