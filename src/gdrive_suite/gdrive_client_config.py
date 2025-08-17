@@ -61,7 +61,7 @@ class GDriveClientConfig:
             creds, _ = google.auth.default(scopes=self._scope)
             if creds:
                 logger.opt(colors=True).info(
-                    "Successfully loaded defauls aplication credentials."
+                    "Successfully loaded default aplication credentials."
                 )
                 return creds
         except DefaultCredentialsError:
