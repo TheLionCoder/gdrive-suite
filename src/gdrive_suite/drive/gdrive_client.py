@@ -2,7 +2,7 @@ import io
 from pathlib import Path
 from typing import Any, List, Optional, Dict
 
-
+from google.oauth2.credentials import Credentials
 from .gdrive_client_config import GDriveClientConfig
 from googleapiclient.discovery import build
 from googleapiclient.http import HttpError, MediaIoBaseDownload, MediaFileUpload
@@ -28,13 +28,13 @@ class GDriveClient:
     - Retrieve Google Sheets data
     """
 
-    def __init__(self, drive_config_manager):
+    def __init__(self, drive_config_manager: GDriveClientConfig):
         """Initializes the GdriveService
         :param drive_config_manager: A ConfigManager that provides
          Outh2 credentials.
         """
         try:
-            self._credentials: GDriveClientConfig = (
+            self._credentials: Optional[Credentials] = (
                 drive_config_manager.get_credentials()
             )
             self.drive_service: Any = build(
@@ -152,7 +152,7 @@ class GDriveClient:
                 f"from sheet: '{spreadsheet_id}': {e}"
             )
 
-    def upload_file(self, file_path: Path, folder_id: str, **metadata) -> str:
+    def upload_file(self, file_path: Path, folder_id: str, **metadata: Any) -> str:
         """Upload file to Google Drive
         :param file_path: Path to the file to the upload
         :param file_name: Name for the uploaded file
@@ -183,7 +183,7 @@ class GDriveClient:
                 f"of '{file_path.name}': {e}"
             )
 
-    def list_files(self, query: str, **list_params) -> List[Dict[str, Any]]:
+    def list_files(self, query: str, **list_params: Any) -> List[Dict[str, Any]]:
         """Helper function to list files in Google Drive
         :param query: A query for filtering results. See "Search for files"
             guide for support syntax.

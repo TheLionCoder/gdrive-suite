@@ -1,0 +1,25 @@
+site_name: Gdrive Suite
+repo_url: https://github.com/TheLionCoder/gdrive-suite
+site_author: TheLionCoder
+site_description: Documenttion for the Gdrive-suite Package.
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - navigation.tabs
+    - navigation.top
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences

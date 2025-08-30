@@ -25,7 +25,10 @@ dependencies = [
   "google-api-python-client>=2.162.0",
   "google-auth-oauthlib>=1.2.1",
   "loguru>=0.7.3",
+  "mkdocs>=1.6.1",
+  "mkdocs-material>=9.6.18",
   "pyyaml>=6.0.2",
+  "pydantic",
 ]
 
 [project.urls]
@@ -38,6 +41,7 @@ dev = [
   "mypy>=1.17.1",
   "types-pyyaml>=6.0.12.20250516",
   "google-api-python-client-stubs",
+  "google-auth-stubs",
   "pytest",
   "pytest-mock",
   "build",
