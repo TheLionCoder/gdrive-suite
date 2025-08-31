@@ -9,7 +9,7 @@ automatically generated from the source code doc-strings.
 
 The primary interface for interacting with Google Drive and Sheets.
 
-:::gdrive_suite.drive.gdrive_client.GDriveClient
+::: gdrive_suite.GDriveClient
 
 ---
 
@@ -17,9 +17,9 @@ The primary interface for interacting with Google Drive and Sheets.
 
 Classes responsible for managing authentication and configuration.
 
-:::gdrive_suite.drive.gdrive_client_config.GDriveClientConfig
-:::gdrive_suite.context.models.GDriveSettings
-:::gdrive_suite.context.models.DownloadTarget
+::: gdrive_suite.GDriveClientConfig
+::: gdrive_suite.GDriveSettings
+::: gdrive_suite.DownloadTarget
 
 ---
 
@@ -27,8 +27,8 @@ Classes responsible for managing authentication and configuration.
 
 Custom exceptions raised by the library.
 
-:::gdrive_suite.gdrive_exceptions.GDriveSuiteError
-:::gdrive_suite.gdrive_exceptions.GDriveAuthError
-:::gdrive_suite.gdrive_exceptions.CredentialsNotFoundError
-:::gdrive_suite.gdrive_exceptions.ConfigDirectoryError
-:::gdrive_suite.gdrive_exceptions.APIError
+::: gdrive_suite.GDriveSuiteError
+::: gdrive_suite.GDriveAuthError
+::: gdrive_suite.CredentialsNotFoundError
+::: gdrive_suite.ConfigDirectoryError
+::: gdrive_suite.APIError

@@ -15,6 +15,8 @@ from .gdrive_exceptions import (
 )
 from .context import GDriveSettings, DownloadTarget
 
+from .drive import GDriveClient, GDriveClientConfig
+
 __all__ = [
     "GDriveSuiteError",
     "GDriveAuthError",
@@ -23,4 +25,6 @@ __all__ = [
     "CredentialsNotFoundError",
     "GDriveSettings",
     "DownloadTarget",
+    "GDriveClientConfig",
+    "GDriveClient",
 ]
