@@ -1,41 +1,50 @@
-# :snake: Gdrive-Suite
+# Gdrive-Suite
 
 [![Python Version](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![PyPi Version](https://img.shields.io/pypi/v/gdrive-suite.svg?style=for-the-badge&logo=pypi&color=blue)](https://pypi.org/project/gdrive-suite)
 [![MIT License](https://img.shields.io/github/license/TheLionCoder/gdrive-suite?style=for-the-badge&color=green)](https://github.com/TheLionCoder/gdrive-suite/blob/master/LICENSE)
-
 GDrive Suite is a robust Python library designed to streamline interaction with
 Google Drive and Google Sheets.
 It provides an intuitive, high-level interface over the official Google APIs,
-handling authentication, token management, and API calls so you can
-focus on your data workflows.
+handling authentication, token management, and API calls so you can focus on
+your data workflows.
+
+**For a complete guide, usage examples, and the full API reference, please see [GitHub Pages](https://TheLionCoder.github.io/gdrive-suite)**
+
+Whether you're a data engineer building ETL pipelines, a data analyst fetching
+the latest reports, or a data scientist accessing datasets, GDrive Suite simplifies
+cloud file management.
+
+---
+
+## Features
+
+- **Seamless Authentication**: Handles Oauth2 flow and token refreshing automatically,
+  supporting both local server environments (via Application Default Credentials).
+- **File Operations**: Easily download, upload, and list files and folders.
+- **Google Workspace Conversion**: automatically convert Google Docs, Sheets,
+  and slices to formats like `.doc`, `.xlsx`, `.pdf` on download.
+- **Path-Based Navigation**: Find files and folders using familiar directory
+  paths (e.g., `reports/2025/some_month`).
+- **Direct Data Retrieval**: Pull data directly from Google Sheets into your
+  python environment.
+- **In-Memory File Handling**: Retrieve file content directly into a `BytesIO`
+  object for in-memory processing without writing to disk.
+  GDrive Suite is a robust Python library designed to streamline interaction with
+  Google Drive and Google Sheets.
+  It provides an intuitive, high-level interface over the official Google APIs,
+  handling authentication, token management, and API calls so you can
+  focus on your data workflows.
 
 Whether you're a data engineer building ETL pipelines, a data analyst fetching
 the latest reports, or a data scientist accessing datasets,
 GDrive Suite simplifies cloud file management.
 
-## Features
+## Installation
 
-_Seamless Authentication:_ Handles OAuth2 flow and token refreshing automatically,
-supporting both local and server environments (via Application Default Credentials).
-
-_File Operations:_ Easily download, upload, and list files and folders.
-
-_Google Workspace Conversion:_ Automatically convert Google Docs, Sheets,
-and Slides to formats like .docx, .xlsx, and .pdf on download.
-
-_Path-Based Navigation:_ Find files and folders using familiar directory paths
-(e.g., reports/2025/monthly).
-
-Direct Data Retrieval: Pull data directly from Google Sheets into your Python environment.
-
-_In-Memory File Handling:_ Retrieve file content directly into a BytesIO object
-for in-memoryprocessing without writing to disk.
-
-## :package: Installation
-
-Install `gdrive-suite` directly from Pypi.
+Install `gdrive-suite` directly from PyPi. The library requires Python 3.11
+or higher.
 
 ```bash
 pip install gdrive-suite
@@ -45,7 +54,7 @@ pip install gdrive-suite
 
 The library requires python 3.11 or higher.
 
-## :hammer_and_wrench: Configuration
+## Configuration
 
 To use GDrive Suite, you need to enable the Google Drive API and obtain credentials
 for your application.
@@ -101,14 +110,18 @@ This token will be automatically refreshed as needed.
 
 ### Usage Examples
 
-#### Basic Usage: Download a file
+### Basic Usage: Download a file
 
 This example shows how to initialize the client and download a file.
 
 ```python
 from pathlib import Path
-from gdrive_suite import GDriveClient, GDriveClientConfig
-
+from gdrive_suite import (
+  GDriveClient,
+  GDriveClientConfig,
+  DownloadTarget,
+  GDriveSettings
+)
 # --- 1. Configuration ---
 # Define the path to your configuration directory
 CONFIG_DIR = Path("conf/local")
@@ -121,34 +134,37 @@ GOOGLE_SCOPES = [
 ]
 
 # --- 2. Initialization ---
+# Create the settings object
+gdrive_settings: GDriveSettings(
+  config_dir=CONFIG_DIR,
+  token_file_name = "google_token.json",
+  credentials_file_name = "google_credentials.json",
+)
 # Create a configuration object
 gdrive_config = GDriveClientConfig(
-    config_dir_path=CONFIG_DIR,
     scope=GOOGLE_SCOPES,
+    gdrive_settings=gdrive_settings
 )
 
 # Create the GDriveClient instance
 gdrive_client = GDriveClient(gdrive_config)
 
 # --- 3. Download a file ---
-# Specify the directory to download the file to
-download_dir = Path("downloads")
-download_dir.mkdir(exist_ok=True)
-
-# The unique ID of the file from its Google Drive URL
-file_id = "YOUR_FILE_ID" # Replace with the actual file ID
-file_name = "my_downloaded_report.csv"
+# Specify the target to download the file
+target = DownloadTarget (
+  file_id = "some_file_id",
+  destination_path = Path("data/destinatio_dir/myfile.csv"),
+  mime_type = None
+)
 
 print(f"Downloading '{file_name}'...")
 gdrive_client.download_file(
-    directory_path=download_dir,
-    file_id=file_id,
-    file_name=file_name,
+  target
 )
 print(f"File successfully downloaded to '{download_dir}'")
 ```
 
-#### Data Professional Workflow: Load a Google Sheet into Pandas
+### Data Professional Workflow: Load a Google Sheet into Pandas
 
 A common task for data analysts is to pull the latest version of a report from
 Google Drive.
@@ -158,20 +174,26 @@ directly into a pandas DataFrame.
 ```python
 import pandas as pd
 from pathlib import Path
-from gdrive_suite import GDriveClient, GDriveClientConfig
+from gdrive_suite.drive import GDriveClient, GDriveClientConfig
+from gdrive_suite.context import GDriveSettings
 
 # --- Initialization (same as above) ---
 CONFIG_DIR = Path("conf/local")
 GOOGLE_SCOPES = [
     ["https://www.googleapis.com/auth/drive.readonly, https://www.googleapis.com/auth/drive.file"]
 ]
-gdrive_config = GDriveClientConfig(CONFIG_DIR, GOOGLE_SCOPES)
+gdrive_settings = GDriveSettings(
+  config_dir=CONFIG_DIR,
+  token_file_name="google_token.json",
+  credentials_file_name="google_credentials.json"
+)
+gdrive_config = GDriveClientConfig(GOOGLE_SCOPES, gdrive_settings)
 gdrive_client = GDriveClient(gdrive_config)
 
 # --- Find and load the sheet ---
 try:
     # Find the folder ID by navigating from the root ('root')
-    # This is more robust than hardcoding folder IDs
+    # This is more robust than hard coding folder IDs
     folder_path = ["Sales Reports", "2025", "Q3"]
     target_folder_id = gdrive_client.find_folder_id_by_path(
         start_folder_id="root",

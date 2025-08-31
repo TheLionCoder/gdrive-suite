@@ -7,19 +7,20 @@ A python tool designed to work with cloud-based storage services
 __version__ = "0.1.0"
 
 from .gdrive_exceptions import (
-    GdriveSuiteError,
+    GDriveSuiteError,
     GDriveAuthError,
     ConfigDirectoryError,
     APIError,
-    CredentialsNotFoundError
+    CredentialsNotFoundError,
 )
-from .context import GDriveConfigParams
+from .context import GDriveSettings, DownloadTarget
 
 __all__ = [
-    "GdriveSuiteError",
+    "GDriveSuiteError",
     "GDriveAuthError",
     "ConfigDirectoryError",
     "APIError",
     "CredentialsNotFoundError",
-    "GDriveConfigParams"
+    "GDriveSettings",
+    "DownloadTarget",
 ]

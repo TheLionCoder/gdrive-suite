@@ -23,3 +23,17 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+
+nav:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - API Reference:
+      - Usage Examples: API/usage_examples.md
+      - Drive: API/api_reference.md

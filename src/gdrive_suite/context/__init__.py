@@ -1,3 +1,3 @@
-from .gdrive_config import GDriveConfigParams
+from .models import GDriveSettings, DownloadTarget
 
-__all__ = ["GDriveConfigParams"]
+__all__ = ["GDriveSettings", "DownloadTarget"]

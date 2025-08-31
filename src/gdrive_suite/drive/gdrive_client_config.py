@@ -4,10 +4,11 @@ Handles credential management for Google Drive API access.
 
 import functools
 from pathlib import Path
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Union, cast
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
+from google.auth.credentials import Credentials as BaseCredentials
 from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from loguru import logger
@@ -17,18 +18,10 @@ from gdrive_suite import (
     ConfigDirectoryError,
     CredentialsNotFoundError,
     GDriveAuthError,
-    GDriveConfigParams
-
+    GDriveSettings,
 )
 
-
-
-def _refresh_credentials(creds: Credentials) -> Credentials:
-    """Refresh expired credentials
-    :param creds:  with a valid refresh token
-    """
-    creds.refresh(Request())
-    return creds
+type CredentialsTypes = Union[BaseCredentials, Credentials]
 
 
 class GDriveClientConfig:
@@ -38,29 +31,29 @@ class GDriveClientConfig:
     based and default application credentials found in a server environment.
     """
 
-    def __init__(
-        self,
-        scopes: List[str],
-        gdrive_config_params: GDriveConfigParams
-    ):
+    def __init__(self, scopes: List[str], gdrive_settings: GDriveSettings):
         """Constructor for the GoogleDriveClientConfig
 
         Args:
             scopes: A list of OAuth2 scopers required for the application.
-            gdrive_config_params: The configuration parameters for the Google Drive client.
+            gdrive_settings: The configuration parameters for the Google Drive client.
         Raises:
             ConfigDirectoryError: If config_dir_path is not a valid directory.
         """
         self.scopes: List[str] = scopes
         try:
-            gdrive_config_params.config_dir_path.mkdir(parents=True, exist_ok=True)
+            gdrive_settings.config_dir_path.mkdir(parents=True, exist_ok=True)
         except OSError as e:
             raise ConfigDirectoryError(
-                f"Error accessing or creating config directory '{gdrive_config_params.config_dir_path}': {e}"
+                f"Error accessing or creating config directory '{gdrive_settings.config_dir_path}': {e}"
             ) from e
 
-        self.token_file_path: Path = gdrive_config_params.config_dir_path / gdrive_config_params.token_file_name
-        self.credential_file_path: Path = gdrive_config_params.config_dir_path / gdrive_config_params.credentials_file_name
+        self.token_file_path: Path = (
+            gdrive_settings.config_dir_path / gdrive_settings.token_file_name
+        )
+        self.credential_file_path: Path = (
+            gdrive_settings.config_dir_path / gdrive_settings.credentials_file_name
+        )
 
     def _get_default_credentials(self) -> Optional[Credentials]:
         """
@@ -69,7 +62,7 @@ class GDriveClientConfig:
         """
         try:
             creds, _ = google.auth.default(scopes=self.scopes)
-            if creds:
+            if isinstance(creds, Credentials):
                 logger.opt(colors=True).success(
                     "Using Application Default Credentials."
                 )
@@ -90,7 +83,9 @@ class GDriveClientConfig:
         if creds:
             return creds
 
-        logger.opt(colors=True).info("No default credentials. Attempting to load credentials from local files.")
+        logger.opt(colors=True).info(
+            "No default credentials. Attempting to load credentials from local files."
+        )
 
         creds = self._load_local_token()
 
@@ -107,9 +102,7 @@ class GDriveClientConfig:
             )
             return creds
 
-        logger.opt(colors=True).info(
-            "No valid token. Starting new OAuth2 flow."
-        )
+        logger.opt(colors=True).info("No valid token. Starting new OAuth2 flow.")
         creds = self._run_oauth_flow()
         if creds:
             return creds
@@ -120,13 +113,13 @@ class GDriveClientConfig:
 
     def _load_local_token(self) -> Optional[Credentials]:
         """Load credentials from the file toke if it exists.
-           Returns:
-               Credentials object if a token file exists, None otherwise
+        Returns:
+            Credentials object if a token file exists, None otherwise
         """
         if self.token_file_path.exists():
             try:
                 return Credentials.from_authorized_user_file(
-                       str(self.token_file_path), self.scopes
+                    str(self.token_file_path), self.scopes
                 )
             except Exception as e:
                 logger.opt(colors=True).warning(
@@ -135,8 +128,7 @@ class GDriveClientConfig:
         return None
 
     def _save_local_token(self, creds: Credentials) -> None:
-        """Save credentials to the token file
-        """
+        """Save credentials to the token file"""
         try:
             with open(self.token_file_path, "w") as token_file:
                 token_file.write(creds.to_json())
@@ -151,9 +143,7 @@ class GDriveClientConfig:
         )
         try:
             creds.refresh(Request())
-            logger.opt(colors=True).success(
-                "Successfully refreshed credentials."
-            )
+            logger.opt(colors=True).success("Successfully refreshed credentials.")
             return creds
         except RefreshError as e:
             logger.opt(colors=True).error(
@@ -177,12 +167,21 @@ class GDriveClientConfig:
             flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file(
                 client_secrets_file=str(self.credential_file_path), scopes=self.scopes
             )
-            creds = flow.run_local_server(port=0)
-            self._save_local_token(creds)
-            logger.opt(colors=True).success(
-                "Successfully obtained new credentials via OAuth2 flow."
-            )
-            return creds
+            creds_from_flow: Optional[CredentialsTypes] = flow.run_local_server(port=0)
+
+            if isinstance(creds_from_flow, Credentials):
+                creds = cast(Credentials, creds_from_flow)
+                self._save_local_token(creds)
+                logger.opt(colors=True).success(
+                    "Successfully obtained new credentials via OAuth2 flow."
+                )
+                return creds
+            else:
+                logger.opt(colors=True).error(
+                    f"OAuth2 flow returned and unexpected credential type: {type(creds_from_flow)}"
+                )
+                return None
+
         except Exception as e:
             logger.opt(colors=True).error(
                 f"An error ocurred during the OAuth2 flow: {e}"
@@ -191,17 +190,17 @@ class GDriveClientConfig:
 
 
 def get_drive_client_config(
-    scopes: List[str],
-    gdrive_config_params: GDriveConfigParams
+    scopes: List[str], gdrive_settings: GDriveSettings
 ) -> GDriveClientConfig:
     """
     Returns a cached, singleton-like instance of the GDriveClientConfig.
     """
     frozen_scopes: Tuple[str, ...] = tuple(sorted(scopes))
-    return _get_config(frozen_scopes, gdrive_config_params)
+    return _get_config(frozen_scopes, gdrive_settings)
 
 
 @functools.lru_cache(maxsize=None)
-def _get_config(scopes_tuple: Tuple[str, ...], gdrive_config_params: GDriveConfigParams) -> GDriveClientConfig:
-    return GDriveClientConfig(list(scopes_tuple),
-        gdrive_config_params)
+def _get_config(
+    scopes_tuple: Tuple[str, ...], gdrive_settings: GDriveSettings
+) -> GDriveClientConfig:
+    return GDriveClientConfig(list(scopes_tuple), gdrive_settings)

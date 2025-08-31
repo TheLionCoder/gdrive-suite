@@ -9,10 +9,14 @@ from googleapiclient.http import HttpError, MediaIoBaseDownload, MediaFileUpload
 from google.auth.exceptions import RefreshError
 from loguru import logger
 
+from gdrive_suite import APIError, GDriveAuthError, DownloadTarget
+
 
 def _execute_download(downloader: MediaIoBaseDownload) -> None:
     """Execute a download operation with progress track
-    :param downloader: MediaIoBaseDownload instance
+
+    Args:
+       downloader: MediaIoBaseDownload instance
     """
     done: bool = False
     # Make a loop to get the (status and done)
@@ -43,65 +47,63 @@ class GDriveClient:
             self._sheets_service: Any = build(
                 serviceName="sheets", version="v4", credentials=self._credentials
             )
+
         except RefreshError as e:
-            raise ConnectionError(
-                f"Failed to refresh credentials. Please re-authenticate. Details: {e}"
-            )
+            raise GDriveAuthError(
+                f"Failed to refres credentials. please re-authenticate. Details: {e}"
+            ) from e
+
         except Exception as e:
-            raise RuntimeError(f"Failed to initialize Google API services: {e}")
+            raise RuntimeError(f"Failed to initialize Google API services: {e}") from e
 
-    def download_file(
-        self,
-        directory_path: Path,
-        file_id: str,
-        file_name: str,
-        mime_type: Optional[str] = None,
-    ) -> None:
+    def download_file(self, target: DownloadTarget) -> None:
         """Download a file from Google Drive.
-        :param directory_path: Directory to save the file to download
-        :param file_name:
-        :param file_id: Google ID of the file to download
-        :param mime_type: an Optional MIME type for export
-        (for Google Workspace files).
-        See: https://developers.google.com/drive/api/guides/ref-export-formats
-        :raise
-            Exception if the download fails
+
+        Args:
+            target: A `DownloadTarget` object specifyng what a download and
+                where to save it.
+        Raises:
+            APIError: If the download fails due to a Google API error.
+            IOError: For local file system errors.
         """
-        file_path: Path = directory_path / file_name
-        directory_path.mkdir(parents=True, exist_ok=True)
+        if target.destination_path.parent:
+            target.destination_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Get the appropiate request based on mime_type
-        if mime_type:
-            request = self.drive_service.files().export_media(
-                fileId=file_id, mimeType=mime_type
-            )
-        else:
-            request = self.drive_service.files().get_media(fileId=file_id)
         try:
-
-            # Execute the download
-            with open(file_path, "wb") as file_writer:
+            request = (
+                self.drive_service.files().export_media(
+                    fileId=target.file_id, mimeType=target.mime_type
+                )
+                if target.mime_type
+                else self.drive_service.files().get_media(fileId=target.file_id)
+            )
+            with open(target.destination_path, "wb") as file_writer:
                 downloader: MediaIoBaseDownload = MediaIoBaseDownload(
                     fd=file_writer, request=request
                 )
                 _execute_download(downloader)
 
         except HttpError as e:
+            raise APIError(
+                f"Failed to download file '{target.destination_path.name}' (ID: {target.file_id})."
+                f"Reason: {e.resp.status} {e.resp.reason}"
+            ) from e
+        except IOError as e:
             raise IOError(
-                f"Failed to download file '{file_name}' (ID: {file_id})."
-                f"HTTP Error: {e.resp.status} {e.resp.reason}"
-            )
-        except Exception as e:
-            raise IOError(
-                f"An expected error ocurred while downloading '{file_name}': {e}"
-            )
+                f"An expected error ocurred while downloading '{target.destination_path.name}': {e}"
+            ) from e
 
     def retrieve_file_content(self, file_id: str) -> io.BytesIO:
         """Retrieve a file from Google Drive as BytesIO object
-        :param file_id: Google ID of the file to get retrieve_file_content
-        :return: BytesIO object containing the file content
-        :raises:
-            Exception: if retrieval fails
+        Args
+         file_id: Google ID of the file to get retrieve_file_content.
+
+         Return:
+         BytesIO object containing the file content
+
+         Raises:
+           APIError: If the retrieve fials due to Google API error.
+           IOError: For local file system errors.
         """
         try:
             request = self.drive_service.files().get_media(fileId=file_id)
@@ -115,10 +117,11 @@ class GDriveClient:
             return file_content
 
         except HttpError as e:
-            raise IOError(
-                f"Failed to retrieve file content for '{file_id}'. HTTP Error: {e.resp.status} {e.resp.reason}"
-            )
-        except Exception as e:
+            raise APIError(
+                f"Failed to retrieve file content for '{file_id}'. "
+                f"Reason: {e.resp.status} {e.resp.reason}"
+            ) from e
+        except IOError as e:
             raise IOError(
                 f"An unexpected error ocurred while retrieving content "
                 f"for file ID: '{file_id}': {e}"
@@ -128,9 +131,15 @@ class GDriveClient:
         self, spreadsheet_id: str, sheet_range: str
     ) -> List[List[Any]]:
         """Read data from a Google sheet
-        :param spreadsheet_id: ID for the Google sheet
-        :param sheet_range: Range of cells to read (e.j., A1: Z90)
-        :return: List of rows containing cell values
+        Args:
+             spreadsheet_id: ID for the Google sheet
+             sheet_range: Range of cells to read (e.j., A1: Z90)
+
+        Returns:
+            List of rows containing cell values
+
+        Raises:
+            APIError: If retrieving data fails due to a Google API error.
         """
         try:
             result = (
@@ -142,23 +151,22 @@ class GDriveClient:
             return result.get("values", [])
 
         except HttpError as e:
-            raise ValueError(
+            raise APIError(
                 f"Failed to retrieve data from sheet '{spreadsheet_id}'. "
-                f"HTTP Error: {e.resp.status} {e.resp.reason}"
-            )
-        except Exception as e:
-            raise ValueError(
-                f"An unexpected error ocurred while retrieving data "
-                f"from sheet: '{spreadsheet_id}': {e}"
-            )
+                f"Reason: {e.resp.status} {e.resp.reason}"
+            ) from e
 
     def upload_file(self, file_path: Path, folder_id: str, **metadata: Any) -> str:
         """Upload file to Google Drive
-        :param file_path: Path to the file to the upload
-        :param file_name: Name for the uploaded file
-        :param folder_id: ID of the folder to upload to
-        :param mime_type: MIME type of the file
-        :metadata: Additional metadata to add the file
+
+        Args:
+             file_path: Path to the file to the upload
+             folder_id: ID of the folder to upload to
+             metadata: Additional metadata to add the file
+
+        Raises:
+            APIError: If upload fails due to Google API error.
+            IOError: For local file system errors.
         """
         if not file_path.is_file():
             raise FileNotFoundError(f"The specific file does not exist: {file_path}")
@@ -173,22 +181,27 @@ class GDriveClient:
             )
             return response.get("id")
         except HttpError as e:
-            raise IOError(
-                f"Failed to upload file {file_path.name} HTTP Error: "
-                f"{e.resp.status} {e.reason}"
-            )
-        except Exception as e:
+            raise APIError(
+                f"Failed to upload file {file_path.name}. "
+                f"Reason: {e.resp.status} {e.reason}"
+            ) from e
+        except IOError as e:
             raise IOError(
                 f"An unexpected error ocurred during the upload "
                 f"of '{file_path.name}': {e}"
-            )
+            ) from e
 
     def list_files(self, query: str, **list_params: Any) -> List[Dict[str, Any]]:
         """Helper function to list files in Google Drive
-        :param query: A query for filtering results. See "Search for files"
-            guide for support syntax.
-        :param list_params: Additional parameters for listing files.
-        :return: List of searches files
+        Args:
+         query: A query for filtering results. See "Search for files"
+         guide for support syntax.
+         list_params: Additional parameters for listing files.
+         Return:
+         List of searches files.
+
+         Raises:
+           APIError: If the list files fails due to Google API error.
         """
         all_files: List[Dict[str, Any]] = []
         page_token: Optional[str] = None
@@ -213,13 +226,9 @@ class GDriveClient:
                     break
             return all_files
         except HttpError as e:
-            raise IOError(
+            raise APIError(
                 f"Failed to list files with query '{query}'. "
                 f"HTTP Error: {e.resp.status} {e.resp.reason}"
-            )
-        except Exception as e:
-            raise ConnectionError(
-                f"An unexpected error ocurred while listing files: {e}"
             )
 
     def find_folder_id_by_path(
@@ -227,9 +236,11 @@ class GDriveClient:
     ) -> Optional[str]:
         """
         Find a folder's ID by navigating a path of folder names.
-        :param start_folder_id: The ID of the folder to start from.
-        :param path_segments: A list of folder names to navigate.
-        :return: The ID of the folder.
+        Args:
+            start_folder_id: The ID of the folder to start from.
+            path_segments: A list of folder names to navigate.
+        Return:
+          The ID of the folder.
         """
         current_folder_id: str = start_folder_id
         for segment in path_segments:
