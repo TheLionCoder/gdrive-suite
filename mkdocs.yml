@@ -30,6 +30,9 @@ plugins:
       handlers:
         python:
           paths: [src]
+          options:
+            show_root_heading: true
+            show_source: true
 
 nav:
   - Home: index.md
