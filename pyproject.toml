@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 authors = [{ name = "Orlando Reyes", email = "eorlando.reyesruiz@gmail.com" }]
 name = "gdrive-suite"
-version = "0.1.3"
+version = "0.1.4"
 description = "A Python library for interacting with Google Drive and Google Sheets."
 readme = "README.md"
 license = { file = "LICENSE" }
