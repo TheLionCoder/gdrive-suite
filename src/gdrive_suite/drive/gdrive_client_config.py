@@ -21,7 +21,7 @@ from gdrive_suite import (
     GDriveSettings,
 )
 
-type CredentialsTypes = Union[BaseCredentials, Credentials]
+CredentialsTypes = Union[BaseCredentials, Credentials]
 
 
 class GDriveClientConfig:
