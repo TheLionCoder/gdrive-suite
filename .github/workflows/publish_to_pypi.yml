@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install uv
-          uv sync --system
+          uv sync
 
       - name: Run linter and formatter
         run: |
