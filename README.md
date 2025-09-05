@@ -91,8 +91,6 @@ for your application.
 
 Your project structure should look like this:o use Gdrive Suite you need to enable
 
-````sh
-
 - Place credentials in `conf/local`
 
 ```bash
@@ -102,7 +100,7 @@ Your project structure should look like this:o use Gdrive Suite you need to enab
 ├── src
 │   ├── script.py
 
-````
+```
 
 The first time you run your application, you will be prompted to authorize it via
 a browser window. A `google_token.json` file will then be created in the same directory.
