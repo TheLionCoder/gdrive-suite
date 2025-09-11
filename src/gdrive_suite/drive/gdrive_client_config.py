@@ -36,8 +36,6 @@ class GDriveClientConfig:
         Args:
             scopes: A list of OAuth2 scopers required for the application.
             gdrive_settings: The configuration parameters for the Google Drive client.
-        Raises:
-            ConfigDirectoryError: If config_dir_path is not a valid directory.
         """
         self.scopes: List[str] = scopes
         self.token_file_path: Path = (
