@@ -91,7 +91,7 @@ for your application.
 
 Your project structure should look like this:o use Gdrive Suite you need to enable
 
-- Place credentials in `conf/local`
+- Place credentials in `conf/local` and add to .gitignore
 
 ```bash
 ├── conf
@@ -116,9 +116,9 @@ This example shows how to initialize the client and download a file.
 from pathlib import Path
 from gdrive_suite import (
   GDriveClient,
-  GDriveClientConfig,
+  get_drive_client_config,
   DownloadTarget,
-  GDriveSettings
+}  GDriveSettings
 )
 # --- 1. Configuration ---
 # Define the path to your configuration directory
@@ -139,7 +139,7 @@ gdrive_settings: GDriveSettings(
   credentials_file_name = "google_credentials.json",
 )
 # Create a configuration object
-gdrive_config = GDriveClientConfig(
+gdrive_config = get_drive_client_config(
     scope=GOOGLE_SCOPES,
     gdrive_settings=gdrive_settings
 )
@@ -172,20 +172,15 @@ directly into a pandas DataFrame.
 ```python
 import pandas as pd
 from pathlib import Path
-from gdrive_suite.drive import GDriveClient, GDriveClientConfig
+from gdrive_suite.drive import GDriveClient, get_drive_client_config
 from gdrive_suite.context import GDriveSettings
 
 # --- Initialization (same as above) ---
-CONFIG_DIR = Path("conf/local")
+# Using default credentials
 GOOGLE_SCOPES = [
     ["https://www.googleapis.com/auth/drive.readonly, https://www.googleapis.com/auth/drive.file"]
 ]
-gdrive_settings = GDriveSettings(
-  config_dir=CONFIG_DIR,
-  token_file_name="google_token.json",
-  credentials_file_name="google_credentials.json"
-)
-gdrive_config = GDriveClientConfig(GOOGLE_SCOPES, gdrive_settings)
+gdrive_config = get_drive_client_config(GOOGLE_SCOPES, None)
 gdrive_client = GDriveClient(gdrive_config)
 
 # --- Find and load the sheet ---

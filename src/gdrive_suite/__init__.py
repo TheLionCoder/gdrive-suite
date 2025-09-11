@@ -9,22 +9,22 @@ __version__ = "0.1.0"
 from .gdrive_exceptions import (
     GDriveSuiteError,
     GDriveAuthError,
-    ConfigDirectoryError,
     APIError,
     CredentialsNotFoundError,
 )
 from .context import GDriveSettings, DownloadTarget
 
-from .drive import GDriveClient, GDriveClientConfig
+from .drive import GDriveClient
+from .drive.gdrive_client_config import GDriveClientConfig, get_drive_client_config
 
 __all__ = [
     "GDriveSuiteError",
     "GDriveAuthError",
-    "ConfigDirectoryError",
     "APIError",
     "CredentialsNotFoundError",
     "GDriveSettings",
     "DownloadTarget",
     "GDriveClientConfig",
     "GDriveClient",
+    "get_drive_client_config",
 ]

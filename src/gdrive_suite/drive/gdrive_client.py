@@ -102,7 +102,7 @@ class GDriveClient:
          BytesIO object containing the file content
 
          Raises:
-           APIError: If the retrieve fials due to Google API error.
+           APIError: If the retrieve fails due to Google API error.
            IOError: For local file system errors.
         """
         try:

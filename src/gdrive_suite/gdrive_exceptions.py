@@ -24,12 +24,6 @@ class CredentialsNotFoundError(GDriveAuthError):
     pass
 
 
-class ConfigDirectoryError(GDriveAuthError):
-    """Raised for issues related to the configuration directory."""
-
-    pass
-
-
 class APIError(GDriveSuiteError):
     """Raised when an API call to a Google service fails.
 
