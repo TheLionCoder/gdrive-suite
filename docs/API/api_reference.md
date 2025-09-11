@@ -30,5 +30,4 @@ Custom exceptions raised by the library.
 ::: gdrive_suite.GDriveSuiteError
 ::: gdrive_suite.GDriveAuthError
 ::: gdrive_suite.CredentialsNotFoundError
-::: gdrive_suite.ConfigDirectoryError
 ::: gdrive_suite.APIError
