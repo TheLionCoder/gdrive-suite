@@ -9,7 +9,7 @@ from typing import Optional, List, Tuple, Union, cast
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google.auth.credentials import Credentials as BaseCredentials
-from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
+from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.exceptions import DefaultCredentialsError, RefreshError
 from loguru import logger
 import google.auth
@@ -187,13 +187,16 @@ class GDriveClientConfig:
             return None
 
         try:
-            flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file(
-                str(self.credential_file_path), self.scopes
+            flow = cast(
+                InstalledAppFlow,
+                InstalledAppFlow.from_client_secrets_file(
+                    str(self.credential_file_path), self.scopes
+                ),
             )
             creds_from_flow: Optional[CredentialsTypes] = flow.run_local_server(port=0)
 
             if isinstance(creds_from_flow, Credentials):
-                creds = cast(Credentials, creds_from_flow)
+                creds = creds_from_flow
                 logger.opt(colors=True).success(
                     "Successfully obtained new credentials via OAuth2 flow."
                 )
